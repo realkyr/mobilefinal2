@@ -1,23 +1,9 @@
 import 'package:flutter/material.dart';
-
-class Placeholder extends StatelessWidget {
-  final String title;
-
-  Placeholder(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Column(children: <Widget>[
-        Center(child: Text(title))
-        ],
-      ),
-    );
-  }
-}
+import 'package:shared_preferences/shared_preferences.dart';
+import 'Profile.dart';
+import 'Friend.dart';
+import 'LoginForm.dart';
+import './main.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -27,53 +13,87 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int index = 0;
-  final List<Widget> _children = [
-    Placeholder('Home'),
-    Placeholder('Notify'),
-    Placeholder('Map'),
-    Placeholder('Profile'),
-    Placeholder('Settings')
-    ];
+  String greeting = 'Hello';
 
-  void _navHandler(int index) {
+  void getName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      this.index = index;
+      greeting = 'Hello ' + prefs.getString('name');
     });
   }
 
+  void navToProfile() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Profile()));
+  }
+
+  void navToFriend() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => Friend()));
+  }
+
+  void signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => Login()));
+  }
+
   @override
+  void initState() {
+    super.initState();
+    getName();
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
-        bottomNavigationBar: Theme(
-          data: Theme.of(context).copyWith(
-            canvasColor: Theme.of(context).primaryColor,
-          ),
-          child: BottomNavigationBar(
-            currentIndex: index,
-            items: [
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.home), title: Text('Home')),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.notifications),
-                title: Text('Notifications'),
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.map),
-                title: Text('map')
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                title: Text('Profile')
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.settings),
-                title: Text('Setting')
-              ),
-            ],
-            onTap: _navHandler,
-          ),
+        appBar: AppBar(
+          title: Text("Home"),
         ),
-        body: _children[index]);
+        body: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.0),
+          child: ListView(shrinkWrap: true, children: <Widget>[
+            Text(
+              greeting,
+              style: new TextStyle(
+                fontSize: 20.0,
+              ),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                  minWidth: double.infinity, minHeight: 50),
+              child: Builder(
+                  builder: (context) => RaisedButton(
+                        onPressed: () => navToProfile(),
+                        child: Text('PROFILE SETUP',
+                            style: TextStyle(color: Colors.white)),
+                        color: Theme.of(context).accentColor,
+                        splashColor: Colors.blueGrey,
+                      )),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                  minWidth: double.infinity, minHeight: 50),
+              child: Builder(
+                  builder: (context) => RaisedButton(
+                        onPressed: () => navToFriend(),
+                        child: Text('MY FRIENDS',
+                            style: TextStyle(color: Colors.white)),
+                        color: Theme.of(context).accentColor,
+                        splashColor: Colors.blueGrey,
+                      )),
+            ),
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                  minWidth: double.infinity, minHeight: 50),
+              child: Builder(
+                  builder: (context) => RaisedButton(
+                        onPressed: () => signOut(),
+                        child: Text('SIGN OUT',
+                            style: TextStyle(color: Colors.white)),
+                        color: Theme.of(context).accentColor,
+                        splashColor: Colors.blueGrey,
+                      )),
+            ),
+          ]),
+        ));
   }
 }
