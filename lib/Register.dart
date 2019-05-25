@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import './Models/DBProvider.dart';
+import './Models/User.dart';
 
 bool isNumeric(String s) {
   if(s == null) {
@@ -30,6 +32,8 @@ class _RegisterPageState extends State<RegisterPage> {
   String _passwordError = '';
   String _nameError = '';
   String _ageError = '';
+
+  DBProvider _db = DBProvider();
 
   void _continue(BuildContext context) async {
     print({
@@ -92,6 +96,22 @@ class _RegisterPageState extends State<RegisterPage> {
 
     // if data is valid
     print('pass');
+    User _newUser = User(
+      username: username.text,
+      name: name.text,
+      password: password.text,
+      age: int.parse(age.text)
+    );
+
+    User finalNewUser = await _db.insertUser(_newUser);
+    print(finalNewUser.userDetail());
+    Navigator.of(context).pop();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _db.initDB();
   }
 
   @override
