@@ -40,6 +40,14 @@ class DBProvider {
     return maps.length > 0 ? new User.fromMap(maps.first) : null;
   }
 
+  Future<User> getUserByUsername(String username) async {
+    List<Map<String, dynamic>> maps = await db.query('User',
+        columns: [_primekey, _username, _name, _age, _password],
+        where: '$_username = ?',
+        whereArgs: [username]);
+    return maps.length > 0 ? new User.fromMap(maps.first) : null;
+  }
+
   Future<int> deleteUser(int id) async {
     return await db.delete('User', where: '$_primekey = ?', whereArgs: [id]);
   }

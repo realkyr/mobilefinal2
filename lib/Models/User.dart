@@ -24,7 +24,7 @@ class User {
     username = json[_username];
     password = json[_password];
     name = json[_name];
-    age = json[_age];
+    age = int.parse(json[_age]);
   }
 
   Map<String, dynamic> toMap() {

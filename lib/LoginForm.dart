@@ -1,25 +1,64 @@
 import 'package:flutter/material.dart';
 import './Register.dart';
+import './Models/DBProvider.dart';
+import './Models/User.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import './Home.dart';
 
-class LoginForm extends StatelessWidget {
+class LoginForm extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _LoginFormState();
+  }
+}
+
+class _LoginFormState extends State<LoginForm> {
   final TextEditingController user = TextEditingController();
   final TextEditingController password = TextEditingController();
+
+  DBProvider _db = DBProvider();
 
   void _login(BuildContext context) async {
     if (user.text == '' || password.text == '') {
       final snackBar = SnackBar(
-        content: Text('กรุณาระบุ Username or Password'),
+        content: Text('Please fill out this form'),
       );
       Scaffold.of(context).showSnackBar(snackBar);
-    } else if (user.text == 'admin' && password.text == 'admin') {
+    }
+
+    User currentUser = await _db.getUserByUsername(user.text);
+    if (currentUser == null || currentUser.password != password.text) {
+      final snackBar = SnackBar(
+        content: Text('Invalid user or password'),
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
+    } else {
+      print('Yeah Login!');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('userid', currentUser.username);
+      prefs.setString('name', currentUser.name);
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => Home()));
-    } else {
-      final snackBar = SnackBar(
-        content: Text('อีเมล์ไม่ถูกต้อง'),
-      );
-      Scaffold.of(context).showSnackBar(snackBar);
+      // print(currentUser.username);
+      // print(currentUser.name);
+      // print('=== from prefs ===');
+      // print(prefs.getString('userid'));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _db.initDB();
+    isUserLogin();
+  }
+
+  void isUserLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // prefs.clear();
+    if (prefs.getString('userid') != null) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => Home()));
     }
   }
 
