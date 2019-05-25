@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
 import 'Profile.dart';
 import 'Friend.dart';
-import 'LoginForm.dart';
 import './main.dart';
 
 class Home extends StatefulWidget {
@@ -14,6 +17,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   String greeting = 'Hello';
+  String myQuote = 'No quote provided yet';
 
   void getName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -37,10 +41,49 @@ class _HomeState extends State<Home> {
         context, MaterialPageRoute(builder: (context) => Login()));
   }
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    print(path);
+    return File('$path/data.txt');
+  }
+
+  Future<File> writeFile(String key, String value) async {
+    final file = await _localFile;
+    String data = '{"$key": "$value"}';
+    print(data);
+    return file.writeAsString(data); // Write the file
+  }
+
+  Future<String> readFile(String key) async {
+    try {
+      final file = await _localFile;
+      // Read the file
+      Map contents = json.decode(await file.readAsString());
+      return contents[key];
+    } catch (e) {
+      print(e);
+      return e;
+    }
+  }
+
+  void getQuote() async {
+    readFile('quote').then((String quote) {
+      setState(() {
+        myQuote = 'this is my quote "' + quote + '"';
+      });
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     getName();
+    getQuote();
   }
 
   Widget build(BuildContext context) {
@@ -57,6 +100,7 @@ class _HomeState extends State<Home> {
                 fontSize: 20.0,
               ),
             ),
+            Text(myQuote),
             ConstrainedBox(
               constraints: const BoxConstraints(
                   minWidth: double.infinity, minHeight: 50),
